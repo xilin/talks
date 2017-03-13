@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+
+        <title>阿里云ONS服务简介</title>
+
+        <meta name="description" content="ONS简介">
+        <meta name="author" content="Lin Xi">
+
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <link rel="stylesheet" href="css/reveal.css">
+        <link rel="stylesheet" href="css/theme/solarized.css" id="theme">
+
+        <!-- Theme used for syntax highlighting of code -->
+        <link rel="stylesheet" href="lib/css/zenburn.css">
+
+        <!--[if lt IE 9]>
+        <script src="lib/js/html5shiv.js"></script>
+        <![endif]-->
+    </head>
+
+    <body>
+
+        <div class="reveal">
+
+            <!-- Any section element inside of this container is displayed as a slide -->
+            <div class="slides">
+                <section>
+                    <h2>阿里云ONS服务简介</h2>
+                    <p>
+                        <small>林曦 @ <a href="http://maitao.com/">maitao.com</a></small>
+                    </p>
+                    <a href="#" class="navigate-down">
+                        <img width="128" height="128" data-src="img/Logo/maitao-icon.png" alt="maitao logo">
+                    </a>
+                    <aside class="notes">
+
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Agenda</h2>
+                    <ul>
+                        <li>ONS功能简介</li>
+                        <li>初探Consumer消息接收的实现</li>
+                        <li>在麦淘系统中的封装设计</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>ONS功能简介</h2>
+                    <ul>
+                        <li>概述</li>
+                        <li>产品功能</li>
+                        <li>名词解释</li>
+                        <li>与MNS对比</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <section>
+                        <h2>概述</h2>
+                        <img data-src="img/ONS/MQ_brief.png" alt="https://help.aliyun.com/document_detail/29532.html">
+                        <aside class="notes">
+                            消息队列（Message Queue，简称 MQ）是阿里巴巴集团中间件技术部自主研发的专业消息中间件。产品基于高可用分布式集群技术，提供消息发布订阅、消息轨迹查询、定时（延时）消息、资源统计、监控报警等一系列消息云服务，是企业级互联网架构的核心产品。MQ 历史超过9年，为分布式应用系统提供异步解耦、削峰填谷的能力，同时具备海量消息堆积、高吞吐、可靠重试等互联网应用所需的特性，是阿里巴巴双11使用的核心产品。
+
+                            MQ 是阿里云正式商用的产品，目前在阿里云多个地域（Region）提供了高可用消息云服务，单个域内采用多机房部署，可用性极高，即使整个机房都不可用，仍然可以为应用提供消息发布服务，产品稳定性及可用性完全按照阿里巴巴内部标准来实施，无单点。
+
+                            MQ 目前提供 TCP、HTTP、MQTT 三种协议层面的接入方式，支持 Java、C++ 以及 .NET 不同语言，方便不同编程语言开发的应用快速接入 MQ 消息云服务。用户可以将应用部署在阿里云 ECS、企业自建云，或者嵌入到移动端、物联网设备中与 MQ 建立连接进行消息收发，同时本地开发者也可以通过公网接入 MQ 服务进行消息收发。
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>产品功能</h2>
+                        <img data-src="img/ONS/MQ_function.png" alt="https://help.aliyun.com/document_detail/35369.html">
+                        <aside class="notes">
+                            多协议接入
+
+                            支持 HTTP 协议：支持 RESTful 风格 HTTP 协议完成收发消息,可以解决跨语言使用 MQ 问题。
+                            支持 MQTT 协议：支持主动推送模型，多级 Topic 模型支持一次触达 1000万+ 终端，可广泛应用于物联网和社交即时通信场景。
+                            支持 TCP 协议：区别于 HTTP 简单的接入方式，提供更为专业、可靠、稳定的 TCP 协议的 SDK 接入。
+                            管理工具
+
+                            Web 控制台，支持 Topic 管理、发布管理、订阅管理、消息查询、消息轨迹、资源报表以及监控报警管理。
+                            Open API，提供 API 允许用户将 MQ 管理工具集成到自己的控制台。
+                            mqadmin 命令集，专有云输出提供一套丰富的管理命令集，以命令方式对 MQ 服务进行管理。
+                            特色功能
+
+                            事务消息，实现类似 X/Open XA 的分布事务功能，以达到事务最终一致性状态。
+                            定时（延时）消息，允许消息生产者指定消息进行定时（延时）投递，最长支持40天。
+                            大消息，目前默认支持最大 256KB 消息，华北2 地域支持最大 4MB 消息。
+                            消息轨迹，通过消息轨迹，用户能清晰定位消息从发布者发出，经由 MQ 服务端，投递给消息订阅者的完整链路，方便定位排查问题。
+                            广播消息，允许一个 Consumer ID 所标识的所有 Consumer 都会各自消费某条消息一次。
+                            顺序消息，允许消息消费者按照消息发送的顺序对消息进行消费。
+                            重置消费进度，根据时间重置消费进度，允许用户进行消息回溯或者丢弃堆积消息。
+                            专有云部署
+
+                            专家定制，提供技术方案设计；专家现场技术支持与培训。
+                            灵活部署，支持专有云独立部署，同时支持混合云架构。
+                            运维管控，专有云支持 mqadmin 命令集、Open API 运维管理工具，方便管控平台集成以及统一运维。
+                        </aside>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## 名词解释
+                                * Message
+                                    - 消息，消息队列中信息传递的载体。
+
+                                * Message ID
+                                    - 消息的全局唯一标识，由 MQ 系统自动生成，唯一标识某条消息。
+
+                                * Message Key
+                                    - 消息的业务标识，由消息生产者（Producer）设置，唯一标识某个业务逻辑。
+                        </script>
+                        <aside class="notes">
+                            https://help.aliyun.com/document_detail/29533.html
+                        </aside>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## 名词解释
+                                * Topic
+                                    - 消息主题，一级消息类型，通过 Topic 对消息进行分类。
+
+                                * Tag
+                                    - 消息标签，二级消息类型，用来进一步区分某个 Topic 下的消息分类。
+                        </script>
+                        <aside class="notes">
+                            https://help.aliyun.com/document_detail/29533.html
+                        </aside>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## 名词解释
+                                * 集群消费
+                                    - 一个 Consumer ID 所标识的所有 Consumer 平均分摊消费消息。例如某个 Topic 有 9 条消息，一个 Consumer ID 有 3 个 Consumer 实例，那么在集群消费模式下每个实例平均分摊，只消费其中的 3 条消息。
+
+                                * 广播消费
+                                    - 一个 Consumer ID 所标识的所有 Consumer 都会各自消费某条消息一次。例如某个 Topic 有 9 条消息，一个 Consumer ID 有 3 个 Consumer 实例，那么在广播消费模式下每个实例都会各自消费 9 条消息。
+                        </script>
+                        <aside class="notes">
+                            https://help.aliyun.com/document_detail/29533.html
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>与MNS对比</h2>
+                        <img data-src="img/ONS/MQ_diff.png" alt="https://bbs.aliyun.com/read/259814.html">
+                        <aside class="notes">
+                            https://help.aliyun.com/document_detail/27437.html
+                        </aside>
+                    </section>
+                </section>
+
+                <section>
+                    <h2>初探Consumer消息接收的实现</h2>
+                    <img width="80%" data-src="img/ONS/MQ_impl.png" alt="">
+                </section>
+
+                <section>
+                    <h2>在麦淘系统中的封装设计</h2>
+                    <ul>
+                        <li>1. https://help.aliyun.com/document_detail/34411.html</li>
+                        <li>2. https://yq.aliyun.com/articles/66128</li>
+                        <li>3. http://docs-aliyun.cn-hangzhou.oss.aliyun-inc.com/pdf/ons-user-guide-cn-zh-2016-08-11.pdf</li>
+                    </ul>
+                </section>
+                <section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## 只使用一个Topic
+                                - 减少花费
+
+                                - ONS提供了Tag功能用以过滤
+
+                                - 封装后的接口上直接提供不带topic的消息发送方法
+                        </script>
+                        <aside class="notes">
+                        </aside>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## 部署
+
+                                - 将生产者和消费者都集成在server工程里部署
+
+                                  * ONS会将同样标识的生产者和消费者都默认作为集群处理，在默认的集群模式下（非广播模式）一条消息只会往集群中的一个结点进行投递
+
+                                  * 在订阅时ONS本身支持tag的过滤，但因为部署的原因选择直接订阅该topic下的所有tag，自行分发处理
+                        </script>
+                        <aside class="notes">
+                        </aside>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## 封装
+
+                                - 封装了Topic/Tag/Message/Action，让具体的MQ实现与业务方保持透明
+
+                                - 提供mqServer和mqBO两级类供调用（remote/local call）
+
+                                - [重试机制](https://help.aliyun.com/document_detail/43490.html)
+                        </script>
+                        <aside class="notes">
+                        </aside>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## 对生产者
+
+                                - 默认采用async方式进行消息发送
+
+                                  * 在失败回调中持久化消息到数据库，人工或定时触发重试
+                                  * 该方案在事件处理上，应不差于现在的直接同步方法调用
+
+                                - 由业务方自行处理设定保证唯一性的key
+
+                                - 目前只封装马上发送的普通无序消息，以后有需求可以再进一步引入延时、定时等消息
+
+                                - 接口支持serializable/string/byte[]等数据的直接发送
+                        </script>
+                        <aside class="notes">
+                        </aside>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## 对消费者
+
+                                - 需实现一个consume接口
+
+                                - 需自行处理消息的去重或幂等（利用key）
+
+                                - ONS不支持消息的batch操作
+                        </script>
+                        <aside class="notes">
+                        </aside>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## 实现样例
+
+                                - 见[commit](https://coding.net/u/maitao/p/server/git/commit/be0f6b73c3f8cb169b75d8c5a04199b8302f49ef)
+                        </script>
+                        <aside class="notes">
+                        </aside>
+                    </section>
+                </section>
+        </div>
+
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.js"></script>
+
+        <script>
+
+            // More info https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: true,
+
+                transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+                // More info https://github.com/hakimel/reveal.js#dependencies
+                dependencies: [
+                    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: 'plugin/zoom-js/zoom.js', async: true },
+                    { src: 'plugin/notes/notes.js', async: true }
+                ]
+            });
+
+        </script>
+
+    </body>
+</html>

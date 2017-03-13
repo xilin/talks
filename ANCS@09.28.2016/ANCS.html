@@ -1,0 +1,579 @@
+<!doctype html>
+<html lang="en">
+
+    <head>
+        <meta charset="utf-8">
+
+        <title>ANCS - Apple Notification Center Service</title>
+
+        <meta name="description" content="A simple introduction for ANCS">
+        <meta name="author" content="Lin Xi">
+
+        <meta name="apple-mobile-web-app-capable" content="yes">
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+        <link rel="stylesheet" href="css/reveal.css">
+        <link rel="stylesheet" href="css/theme/solarized.css" id="theme">
+
+        <!-- Theme used for syntax highlighting of code -->
+        <link rel="stylesheet" href="lib/css/zenburn.css">
+
+        <!--[if lt IE 9]>
+        <script src="lib/js/html5shiv.js"></script>
+        <![endif]-->
+    </head>
+
+    <body>
+
+        <div class="reveal">
+
+            <!-- Any section element inside of this container is displayed as a slide -->
+            <div class="slides">
+                <section>
+                    <h1>BLE & ANCS</h1>
+                    <p>
+                        <small>By Lin Xi @ <a href="http://maitao.com/">maitao.com</a></small>
+                    </p>
+                    <a href="#" class="navigate-down">
+                        <img width="128" height="128" data-src="img/Logo/maitao-icon.png" alt="maitao logo">
+                    </a>
+                    <aside class="notes">
+                        1. Maitao is a company focus on Parent-Child relationship and their education/travel requirements.
+                        2. Question: Has anyone programmed on bluetooth before?
+                        3. This is more like a college assignment report recording my research of BLE and ANCS. Please correct me if I make mistakes.
+                    </aside>
+                </section>
+
+                <section>
+                    <h2>Agenda</h2>
+                    <ul>
+                        <li>BLE</li>
+                        <li>Core Bluetooth</li>
+                        <li>ANCS</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <h2>BLE</h2>
+                    <ul>
+                        <li>Background</li>
+                        <li>Bluetooth Profile</li>
+                        <li>The BLE Protocol Stack</li>
+                        <li>Generic Access Profile(GAP)</li>
+                        <li>Generic Attribute Profile(GATT)</li>
+                    </ul>
+                </section>
+
+                <section>
+                    <section>
+                        <div style="float:left">
+                            <h2>Background</h2>
+                            <ul>
+                                <li>Bluetooth Low Energy (BLE)</li>
+                                <li>a light-weight subset of classic Bluetooth</li>
+                                <li>started by Nokia called 'Wibree'</li>
+                                <li>The easiest way to talk to modern mobile platforms</li>
+                            </ul>
+                        </div>
+                        <div style="float:right">
+                            <img data-src="img/ANCS/bluetooth.png">
+                        </div>
+                        <aside class="notes">
+                            marketed as "Bluetooth Smart"
+                            Bluetooth low energy (Bluetooth LE, BLE, marketed as Bluetooth Smart[1]) is a wireless personal area network technology designed and marketed by the Bluetooth Special Interest Group aimed at novel applications in the healthcare, fitness, beacons,[2] security, and home entertainment industries.[3] Compared to Classic Bluetooth, Bluetooth Smart is intended to provide considerably reduced power consumption and cost while maintaining a similar communication range.
+                        </aside>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## BLE Platform Support
+                                * iOS5+
+                                * Android 4.3+ (numerous bug fixes in 4.4+)
+                                * Apple OS X 10.6+
+                                * Windows 8 (**XP, Vista and 7 only support Bluetooth 2.1**)
+                                * GNU/Linux Vanilla BlueZ 4.93+
+                        </script>
+                    </section>
+                </section>
+                <section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## Bluetooth Profile
+                                * A specification regarding an aspect of communication between devices
+                                * a device must be compatible with the subset of Bluetooth *profiles* 
+                        </script>
+                        <aside class="notes">
+                            * The way a device uses Bluetooth technology depends on its profile capabilities
+                        </aside>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## List of some profiles
+                                * [Advanced Audio Distribution Profile (A2DP)](https://en.wikipedia.org/wiki/List_of_Bluetooth_profiles#Advanced_Audio_Distribution_Profile_.28A2DP.29)
+                                * [Attribute Profile (ATT)](https://en.wikipedia.org/wiki/List_of_Bluetooth_profiles#Attribute_Profile_.28ATT.29)
+                                * [Generic Access Profile (GAP)](https://en.wikipedia.org/wiki/List_of_Bluetooth_profiles#Generic_Access_Profile_.28GAP.29)
+                                * [Generic Attribute Profile (GATT)](https://en.wikipedia.org/wiki/List_of_Bluetooth_profiles#Generic_Attribute_Profile_.28GATT.29)
+                                * [Human Interface Device Profile (HID)](https://en.wikipedia.org/wiki/List_of_Bluetooth_profiles#Human_Interface_Device_Profile_.28HID.29)
+                                * [Object Push Profile (OPP)](https://en.wikipedia.org/wiki/List_of_Bluetooth_profiles#Object_Push_Profile_.28OPP.29)
+                                * ...
+                        </script>
+                        <aside class="notes">
+                            - The ATT is a wire application protocol for the [Bluetooth Low Energy](https://en.wikipedia.org/wiki/Bluetooth_Low_Energy) specification. It is closely related to Generic Attribute Profile (GATT).
+                            - Provides the basis for all other profiles. GAP defines how two Bluetooth units discover and establish a connection with each other.
+                            - Provides profile discovery and description services for [Bluetooth Low Energy](https://en.wikipedia.org/wiki/Bluetooth_Low_Energy) protocol. It defines how ATT attributes are grouped together into sets to form services.[[6]](https://en.wikipedia.org/wiki/List_of_Bluetooth_profiles#cite_note-6)
+                            - A basic profile for sending "objects" such as pictures, [virtual business cards](https://en.wikipedia.org/wiki/VCard), or [appointment details](https://en.wikipedia.org/wiki/VCalendar).
+                        </aside>
+                    </section>
+                </section>
+                <section>
+                    <section>
+                        <h2>The BLE protocol stack</h2>
+                        <img data-src="img/ANCS/protocol_and_packet.jpg">
+                        <aside class="notes">
+                            ### Controller
+
+                            * PHY: pysical layer
+
+                            * LL: controls the RF state of the transceiver, determining whether it’s advertising, scanning, initiating, connected, or standing by
+
+                            * HCI: The communication of Host and Controller
+
+                            ### Host
+
+                            * L2CAP：Multiplexing, QoS, Segmentation, Reassembly
+
+                            * ATT: enables a device to reveal certain of its attributes to another device. The ATT block sets up peer-to-peer communication between an attribute server and a client to be able to exchange this information over a dedicated L2CAP channel
+
+                            * Security Manager(SM): Security, Pairing
+
+                            * GATT: defines the sub-procedures for using ATT and specifies the structure of Bluetooth profiles. All communications between Bluetooth devices are handled through GATT sub-procedures.
+
+                            * GAP: provides the interface between the application and Bluetooth profiles and handles device discovery, connection, and services, including security procedures.
+                        </aside>
+                    </section>
+                </section>
+                <section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## Generic Access Profile(GAP)
+                                *  Provides the basis for all other profiles.
+                                  - device discovery
+                                  - connection
+                                * Role of Device
+                                 - Peripheral(GATT Server)
+                                 - Central(GATT Client)
+                                * Two ways to advertise out
+                                 -  **Advertising Data Payload**
+                                 - **Scan Response Data Payload**(Optional)
+                        </script>
+                    </section>
+                    <section>
+                        <h2>Generic Access Profile(GAP)</h2>
+                        <ul>
+                            <li>Advertising Data Payload</li>
+                            <li>Scan Response Data Payload</li>
+                        </ul>
+                        <img data-src="img/ANCS/gap_send.png">
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Generic Access Profile(GAP)</h2>
+                        <img data-src="img/ANCS/gap_topology.png">
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+                </section>
+                <section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## Attribute Protocol(ATT)
+                                * The sole building block of ATT is the attribute
+                                * An attribute is composed by three elements:
+                                  - a 16-bit handle;
+                                  - an UUID which defines the attribute type;
+                                  - a value of a certaing length.
+                                * amorphous, no meaning of value
+                                * Client-Server Mode
+                                * Notificatoin and indication capabilities
+                        </script>
+                    </section>
+                    <section>
+                        <h2>Generic Attribute Profile(GATT)</h2>
+                        <p>It defines how ATT attributes are grouped together<br> into sets to form services</p>
+                        <img data-src="img/ANCS/gatt.png">
+                        <aside class="notes">
+                            <p>Heart Rate Profile</p>
+                            <ul>
+                                <li>Heart Rate Service</li>
+                                <li>Device Information Service</li>
+                            </ul>
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Generic Attribute Profile(GATT)</h2>
+                        <img data-src="img/ANCS/gatt_send.png">
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Generic Attribute Profile(GATT)</h2>
+                        <img data-src="img/ANCS/gatt_topology.png">
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## GATT - How it works
+                                * Identifier Elements by UUID
+                                  - 0x2800 - service
+                                  - 0x2803 - characteristics
+                                  - 0x2902 - Client Characteristic Configuration descriptor
+                                * Discover by range of handle
+                        </script>
+                    </section>
+                    <section>
+                        <h2>GATT - How it works</h2>
+                        <img data-src="img/ANCS/service_lookup_table.png">
+                        <aside class="notes">
+                        * The cornerstone of a GATT service is the attribute with UUID equal to 0x2800, which means it is a service
+  - 0x2801 is secondary service
+  - GATT needs to figure it out based on handle ranges, and ranges are discovered solely on basis of UUID 0x2800 "cornerstones".
+    - for an attribute to belong to service B, it's handle value must lie between 0x0151 and 0x02ff
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>GATT - How it works</h2>
+                        <img data-src="img/ANCS/service_sample.png">
+                        <aside class="notes">
+                        * The meaning of given service is determined by the value UUID
+  - thermometer service has UUID 0x1816
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>GATT - How it works</h2>
+                        <img data-src="img/ANCS/service_char_desc.png">
+                        <aside class="notes">
+                        * characteristics & descriptors
+  - "cornerstone" attributes: UUID = 0x2803
+  - value has two parts:
+    - UUID defines the meaning
+    - handle specify the real value of characteristics
+  - GATT "knows" that handle 0x0104 is a descriptor that belongs to characteristic 0x0101 because
+      - it is not the value attribute, since the value attribute is known to be 0x0102
+      -  it falls into the range 0x0103..0x010F, which falls between one characteristic and the next.
+  - Client Characteristic Configuration descriptor
+    - This descriptor, whose UUID is 0x2902, has a read/write 16-bit value, which is meant to be a bitmap.
+    - the server is required to store and present a **separate instance** of the value for **each bonded client**
+    - By setting CCC, the client tells to server that it wants to be notified when the characteristic changes
+                        </aside>
+                    </section>
+                </section>
+                <section>
+                    <section>
+                        <h2>Core Bluetooth</h2>
+                        <p>Provides the classes needed for your iOS and Mac apps to communicate with devices that are equipped with Bluetooth low energy wireless technology</p>
+
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Core Bluetooth</h2>
+                        <img data-src="img/ANCS/core_bt.png">
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Core Bluetooth</h2>
+                        <img width="70%"" data-src="img/ANCS/core_cp.png">
+                        <img data-src="img/ANCS/core_ad.png">
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Core Bluetooth</h2>
+                        <img data-src="img/ANCS/core_bt.png">
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Core Bluetooth</h2>
+                        <img data-src="img/ANCS/core_sc.png">
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Local Centrals and Remote Peripherals</h2>
+                        <img data-src="img/ANCS/core_cs_a.png">
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Local Centrals and Remote Peripherals</h2>
+                        <img data-src="img/ANCS/core_cs_b.png">
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Local Peripherals and Remote Centrals</h2>
+                        <img data-src="img/ANCS/core_sc_a.png">
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Local Peripherals and Remote Centrals</h2>
+                        <img data-src="img/ANCS/core_sc_b.png">
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+                </section>
+                <section>
+                    <section>
+                        <h2>Apple Notification Center Service(ANCS)</h2>
+                        <p>Give Bluetooth accessories a simple and convenient way to access many kinds of notifications that are generated on iOS devices.</p>
+
+                        <aside class="notes">
+
+                        </aside>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## ANCS
+                                * Dependencies
+                                  - none
+                                  - A GATT client is free to access and use other services provided by the iOS device while using the ANCS
+                                * Endianness and String Encoding
+                                  - Little endian
+                                  - UTF-8
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## ANCS
+                                * Terminology
+                                  - NP
+                                    - The publisher of the ANCS service (the iOS device) shall be referred to as the *Notification Provider*
+                                  - NC
+                                    - Any client of the ANCS service (an accessory) shall be referred to as a *Notification Consumer*
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## ANCS
+                                * Service
+                                    - UUID: 7905F431-B5CE-4E99-A40F-4B1E122D00D0
+                                * Characteristics
+                                    - **Notification Source:** 9FBF120D-6301-42D9-8C58-25E699A21DBD (notifiable)
+                                    - **Control Point:** 69D1D8F3-45E1-49A8-9821-9BBDFDAAD9D9 (writeable with response)
+                                    - **Data Source:** 22EAC6E9-24D6-4BB5-BE44-B36ACE7C7BFB (notifiable)
+                        </script>
+                    </section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## Notification Source
+                                * upon which an NC is informed of
+                                    - The arrival of a new iOS notification on the NP
+                                    - The modification of an iOS notification on the NP
+                                    - The removal of an iOS notification on the NP
+                        </script>
+                    </section>
+                    <section>
+                        <h2>Notification Source</h2>
+                        <h4>Format of GATT notifications(characteristic)</h4>
+                        <img data-src="img/ANCS/ancs_a.png">
+                        <aside class="notes">
+A GATT notification delivered through the Notification Source characteristic contains the following information:
+
+EventID: This field informs the accessory whether the given iOS notification was added, modified, or removed. The enumerated values for this field are defined in EventID Values.
+EventFlags: A bitmask whose set bits inform an NC of specificities with the iOS notification. For example, if an iOS notification is considered “important”, the NC may want to display a more aggressive user interface (UI) to make sure the user is properly alerted. The enumerated bits for this field are defined in EventFlags.
+CategoryID: A numerical value providing a category in which the iOS notification can be classified. The NP will make a best effort to provide an accurate category for each iOS notification. The enumerated values for this field are defined in CategoryID Values.
+CategoryCount: The current number of active iOS notifications in the given category. For example, if two unread emails are sitting in a user’s email inbox, and a new email is pushed to the user’s iOS device, the value of CategoryCount is 3.
+NotificationUID: A 32-bit numerical value that is the unique identifier (UID) for the iOS notification. This value can be used as a handle in commands sent to the Control Point characteristic to interact with the iOS notification.
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Notification Source</h2>
+                        <h4>The lifetime of an iOS notification</h4>
+                        <img width="60%" data-src="img/ANCS/ancs_b.png">
+                        <aside class="notes">
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Control Point and Data Source</h2>
+                        <ul>
+                            <li>Retrieve more information about an iOS notification</li>
+                            <li>Perform pre-determined actions on an iOS notification</li>
+                            <li>Respond from NP by Data Source characteristic if succeed</li>
+                        </ul>
+                        <aside class="notes">
+                        An NC can issue a request to retrieve more information about an iOS notification by writing specific commands to the Control Point characteristic. If the write to the Control Point characteristic is successful, the NP will promptly respond to the request through a stream of GATT notifications on the Data Source characteristic.
+
+An NC can perform pre-determined actions on an iOS notification by writing specific commands to the Control Point characteristic. More information about actions and iOS notifications are in Perform Notification Action.
+
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Get Notification Attributes</h2>
+                        <h4>retrieve the attributes of a specific iOS notificationn</h4>
+                        <img width="60%" data-src="img/ANCS/ancs_c.png">
+                        <aside class="notes">
+                        A Get Notification Attributes command contains the following information:
+
+CommandID: Should be set to 0 (CommandIDGetNotificationAttributes).
+NotificationUID: The 32-bit numerical value representing the UID of the iOS notification for which the client wants information.
+AttributeIDs: A list of attributes that the NC wants to retrieve. Some attributes may need to be followed by a 16-bit length parameter that specifies the maximum number of bytes of the attribute the NC wants to retrieve.
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Response to a Get Notification Attributes</h2>
+                        <h4>retrieve the attributes of a specific iOS notificationn</h4>
+                        <img width="60%" data-src="img/ANCS/ancs_d.png">
+                        <aside class="notes">
+                        A response to a Get Notification Attributes command contains the following information:
+
+CommandID: Set to 0 (CommandIDGetNotificationAttributes).
+NotificationUID: The 32-bit numerical value that is the UID of the iOS notification the following attributes correspond to.
+AttributeList: A list of AttributeIDs/16-bit Length/Attribute tuples. An attribute is always a string whose length in bytes is provided in the tuple but that is not NULL-terminated. If a requested attribute is empty or missing for the iOS notification, its length is set to 0. The tuples are always in the same order as the AttributeIDs of the Get Notification Attributes command.
+If the response is larger than the negotiated GATT Maximum Transmission Unit (MTU), it is split into multiple fragments by the NP. The NC must recompose the response by splicing each fragment. The response is complete when the complete tuples for each requested attribute has been received.
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Get App Attributes</h2>
+                        <h4>retrieve attributes of a specific app installed on the NP</h4>
+                        <img width="60%" data-src="img/ANCS/ancs_e.png">
+                        <aside class="notes">
+                        A Get App Attributes command contains the following information:
+
+CommandID: Should be set to 1 (CommandIDGetAppAttributes).
+AppIdentifier: The string identifier of the app the client wants information about. This string must be NULL-terminated.
+AttributeIDs: A list of attributes the NC wants to retrieve.
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>response to a Get App Attributes command</h2>
+                        <h4></h4>
+                        <img width="60%" data-src="img/ANCS/ancs_f.png">
+                        <aside class="notes">
+                        A response to a Get App Attributes command contains the following information:
+
+CommandID: Set to 1 (CommandIDGetAppAttributes).
+AppIdentifier: The string identifier of the app the following attributes correspond to. This string is NULL-terminated.
+AttributeList: A list of AttributeIDs/16-bit Length/Attribute tuples. An attribute is always a string whose length in bytes is provided in the tuple but that is not NULL-terminated. If a requested attribute is empty or missing for the app, its length is set to 0. The tuples are always in the same order as the AttributeIDs of the Get App Attributes command.
+As with a response to a Get Notification Attributes command, if the response to a Get App Attributes command is larger than the negotiated GATT Maximum Transmission Unit (MTU), it is split into multiple fragments by the NP. The NC must recompose the response by splicing each fragment. The response is complete when the complete tuples for each requested attribute has been received.
+
+
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>Perform Notification Action</h2>
+                        <p>A Perform Notification Action command contains the following fields:</p>
+                        <img width="60%" data-src="img/ANCS/ancs_g.png">
+                        <aside class="notes">
+                        Notification Actions
+
+Starting with iOS 8.0, the NP can inform the NC of potential actions that are associated with iOS notifications. On the user’s behalf, the NC can then request the NP to perform an action associated with a specific iOS notification.
+
+The NC is informed of the existence of performable actions on an iOS notification by detecting the presence of set flags in the EventFlags field of the GATT notifications generated by the Notification Source characteristic:
+
+EventFlagPositiveAction: A positive action exists and is associated with this iOS notification.
+EventFlagNegativeAction: A negative action exists and is associated with this iOS notification.
+The actual actions performed by the NP on behalf of the NC are determined by the NP and vary depending on the iOS notification they are performed on. For example, performing a positive action on an Incoming Call notification may answer it, while performing a negative action may decline it.
+
+The NC must neither assume nor try to guess in advance the exact action performed on an iOS Notification, because these actions are based upon information unavailable to it, as well as other factors such as the ANCS version implemented by the NP. The NP guarantees that positive and negative actions are associated with results that do not surprise the user.
+
+If present for an iOS notification, positive and negative actions may be represented to the user as check marks, X marks, or colors commonly associated with acknowledgment and dismissal (such as green and red).
+
+The NC can retrieve labels that succinctly describe the actual actions associated with an iOS notification by retrieving new notification attributes introduced in iOS 8.0:
+
+NotificationAttributeIDPositiveActionLabel: The label used to describe the positive action that can be performed on the iOS notification.
+NotificationAttributeIDNegativeActionLabel: The label used to describe the negative action that can be performed on the iOS notification.
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>ANCS Example Diagrams</h2>
+                        <h4>Service setup example</h4>
+                        <img width="40%" data-src="img/ANCS/ancs_h.png">
+                        <aside class="notes">
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>ANCS Example Diagrams</h2>
+                        <h4>Notification attribute retrieval example</h4>
+                        <img width="50%" data-src="img/ANCS/ancs_i.png">
+                        <aside class="notes">
+                        </aside>
+                    </section>
+                    <section>
+                        <h2>ANCS Code Sample</h2>
+                        <h4>node-ancs</h4>
+                        <aside class="notes">
+                        </aside>
+                    </section>
+                </section>
+                <section>
+                    <section data-markdown>
+                        <script type="text/template">
+                             ## Refer
+                                * [Introduction to Bluetooth Low Energy](https://learn.adafruit.com/introduction-to-bluetooth-low-energy?view=all)
+                                * [Overview and Evaluation of Bluetooth Low Energy: An Emerging Low-Power Wireless Technology](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3478807/)
+                                * [Bluetooth: ATT and GATT](https://epxx.co/artigos/bluetooth_gatt.html)
+                                * [Apple's Guide of Core Bluetooth](https://developer.apple.com/library/content/documentation/NetworkingInternetWeb/Conceptual/CoreBluetooth_concepts/AboutCoreBluetooth/Introduction.html)
+                                * WWDC2012
+                                  - [Core Bluetooth 101](https://developer.apple.com/videos/play/wwdc2012/703/)
+                                  - [Advanced Core Bluetooth](https://developer.apple.com/videos/play/**wwdc**2012/705/)
+                                  - [Core Bluetooth](https://developer.apple.com/videos/play/**wwdc**2013/703/)
+                                * [Apple's Guide of ANCS](https://developer.apple.com/library/content/documentation/CoreBluetooth/Reference/AppleNotificationCenterServiceSpecification/Introduction/Introduction.html#//apple_ref/doc/uid/TP40013460-CH2-SW1)
+                                * [Android Bluetooth Low Energy-01](https://yanlu.me/android-bluetooth-low-energy-01/)
+                        </script>
+                    </section>
+                    <section>
+                        <h2>Thanks</h2>
+                        <h3>Q&A</h3>
+                    </section>
+                </section>
+
+        </div>
+
+        <script src="lib/js/head.min.js"></script>
+        <script src="js/reveal.js"></script>
+
+        <script>
+
+            // More info https://github.com/hakimel/reveal.js#configuration
+            Reveal.initialize({
+                controls: true,
+                progress: true,
+                history: true,
+                center: true,
+
+                transition: 'slide', // none/fade/slide/convex/concave/zoom
+
+                // More info https://github.com/hakimel/reveal.js#dependencies
+                dependencies: [
+                    { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+                    { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+                    { src: 'plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } },
+                    { src: 'plugin/zoom-js/zoom.js', async: true },
+                    { src: 'plugin/notes/notes.js', async: true }
+                ]
+            });
+
+        </script>
+
+    </body>
+</html>
